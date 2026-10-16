@@ -79,17 +79,26 @@ Plug-In=LeftShift,E
 Shift+Plug-In=LeftCtrl,LeftAlt,E
 
 # Zoom -----------------------------------------------------------------------
-# Octave Down/Up zoom the arrangement horizontally, the 4D dial scrolls the
-# view left/right, with SHIFT the dial zooms to the time selection / whole
-# project and the octave buttons change the track height.
+# Octave Down/Up zoom the arrangement horizontally, with SHIFT they change the
+# track height.
 Octave Down=Minus
 Octave Up=Equal
 Shift+Octave Down=PageDown
 Shift+Octave Up=PageUp
-4D CCW=LeftAlt,Left
-4D CW=LeftAlt,Right
-Shift+4D CCW=LeftCtrl,PageUp
-Shift+4D CW=LeftCtrl,PageDown
+
+# Jog ------------------------------------------------------------------------
+# Turning the 4D dial moves the edit cursor, and while playing the play
+# position follows it. One click steps by grid division (Ctrl+Shift+Left/Right
+# = "Move cursor left/right to grid division"), holding SHIFT steps by a small
+# amount instead (plain Left/Right = "Move cursor left/right").
+#
+# If "fast" and "fine" feel swapped, the other way round is Ctrl+Left /
+# Ctrl+Right ("Rewind a little bit" / "Fast forward a little bit"), which seek
+# the play position directly.
+4D CCW=LeftCtrl,LeftShift,Left
+4D CW=LeftCtrl,LeftShift,Right
+Shift+4D CCW=Left
+Shift+4D CW=Right
 
 # 4D dial and the rotary touch sensors ----------------------------------------
 # The bit values behind these names were measured on an A49, see

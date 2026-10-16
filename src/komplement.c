@@ -502,9 +502,15 @@ int main(int argc, char* argv[])
             if (dial_change != 0)
             {   
                 // It actually changed, so we send a keydown / key up event.
-                const mapping_key_t send_key = mapping_get( 
-                    dial_change > 0 ? DIAL_CW_INDEX : DIAL_CCW_INDEX 
-                );
+                //
+                // The dial has no button of its own, but it does have a
+                // SHIFT layer like every other control: with the keyboard's
+                // SHIFT held (bit 0 of the report), the `Shift+4D CW/CCW`
+                // entries are used instead.
+                const int dial_index = dial_change > 0 ? DIAL_CW_INDEX : DIAL_CCW_INDEX;
+                const mapping_key_t send_key = shift_is_pressed
+                    ? mapping_get_shifted( dial_index )
+                    : mapping_get( dial_index );
 
                 // We want to send this as a single keypress/release
                 // event, so first this.

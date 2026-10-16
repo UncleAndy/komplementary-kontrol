@@ -1,0 +1,21 @@
+[marker @26895490ms] capture start
+[marker @26915390ms] touch encoder 1
+[marker @26922270ms] touch encoder 2
+[marker @26928630ms] touch encoder 3
+[marker @26936330ms] touch encoder 4
+[marker @26943240ms] touch encoder 5
+[marker @26955010ms] touch encoder 6
+[marker @26959760ms] touch encoder 7
+[marker @26963840ms] touch encoder 8
+[marker @26982680ms] rotate encoder 1
+[marker @26992660ms] rotate encoder 2
+[marker @27000680ms] rotate encoder 3
+[marker @27008780ms] rotate encoder 4
+[marker @27020380ms] rotate encoder 5
+[marker @27031570ms] rotate encoder 6
+[marker @27040060ms] rotate encoder 7
+[marker @27049030ms] rotate encoder 8
+[marker @27062170ms] 4D directions
+[marker @27076520ms] encoder push
+[marker @27096060ms] known button (control)
+[marker @27106170ms] quiet period

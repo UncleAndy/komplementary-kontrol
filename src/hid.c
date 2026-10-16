@@ -26,7 +26,7 @@ int hidstuff_init(int vid, int pid)
 /* 
  * Cleans up HID device.
  */
-void hidstuff_exit()
+void hidstuff_exit(void)
 {
     if (device) hid_close(device);
     device = NULL;

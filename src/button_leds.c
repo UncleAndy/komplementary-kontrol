@@ -11,7 +11,7 @@ static unsigned char button_hid_data[ 1 + TOTAL_HID_BUTTONS ]; // so 22 items, 2
 /*
  * Clear out all leds to 'off'
  */
-void leds_clear()
+void leds_clear(void)
 {
     memset(button_hid_data + 1,0,TOTAL_HID_BUTTONS);
 }
@@ -22,7 +22,7 @@ void leds_clear()
  * This initialises the internal buffer that is sent
  * over the wire as HID data.
  */
-void leds_init()
+void leds_init(void)
 {
     // Initialise the hid data packet.
     button_hid_data[ 0 ] = 0x80;
@@ -50,7 +50,7 @@ void leds_update_led( int index, int state )
 /*
  * Syncs the LED state.
  */
-int leds_sync()
+int leds_sync(void)
 {
     char receive_buffer[ 22 ];
     return hidstuff_send_raw( 
@@ -86,7 +86,7 @@ static char animation_sequence[ANIMATE_COLUMNS][5] = {
 };
 
 
-void leds_animate_on()
+void leds_animate_on(void)
 {   
 /*
     // Wipe from Left to Right
@@ -157,7 +157,7 @@ void leds_animate_on()
  * This turns all the buttons off, from index 0 to 21 with 
  * a slight delay in between.
  */
-void leds_animate_off()
+void leds_animate_off(void)
 {
     for(int i=0; i < TOTAL_HID_BUTTONS; i++)
     {
@@ -171,7 +171,7 @@ void leds_animate_off()
 /*
  * Turns all LEDs off, without any delay.
  */
-void leds_off()
+void leds_off(void)
 {
     leds_clear();
     leds_sync();

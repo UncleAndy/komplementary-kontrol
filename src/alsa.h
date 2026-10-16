@@ -16,6 +16,6 @@
 int alsa_open_client( char * client_name );
 int alsa_send_mmc( unsigned char command, unsigned char channel );
 
-void alsa_close_client();
+void alsa_close_client( void );
 
 #endif /* _ALSA_STUFF_H_ */

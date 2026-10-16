@@ -25,11 +25,11 @@ static const char * button_names[ REAL_BUTTON_TOTAL ] = {
     "Track",
     "Octave Down",
     "Octave Up",
-    "4D Up",
-    "4D Right",
-    "4D Left",
-    "4D Down",
-    "Rotary1",
+    "4D Up",            // bit 21, buf[3] 0x20
+    "4D Left",          // bit 22, buf[3] 0x40  } measured on an A49, see
+    "4D Right",         // bit 23, buf[3] 0x80  } doc/Captured_Codes.md
+    "4D Down",          // bit 24, buf[4] 0x01
+    "Rotary1",          
     "Rotary2",
     "Rotary3",
     "Rotary4",

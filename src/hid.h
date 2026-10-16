@@ -9,7 +9,7 @@
 #include <hidapi/hidapi.h>
 
 int hidstuff_init( int vid, int pid );
-void hidstuff_exit();
+void hidstuff_exit( void );
 
 int hidstuff_send_raw( 
     unsigned char * buffer, size_t buflen,

@@ -26,7 +26,7 @@ typedef struct mapping_key_t {
 #define MAP_MMC_KEY(code)   (mapped_key_t){.type=MAPPING_TYPE_MMC, .key=code}
 #define MAP_KEY(code)       (mapped_key_t){.type=MAPPING_TYPE_KEY, .key=code}
 
-void mapping_init();
+void mapping_init( void );
 
 void mapping_set( int index, mapping_key_t key );
 void mapping_set_shifted( int index, mapping_key_t key );

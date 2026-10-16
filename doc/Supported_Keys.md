@@ -36,19 +36,25 @@ are all supported and can be assigned:
     Octave Down
     Octave Up
     4D Up
-    4D Right
     4D Left
+    4D Right
     4D Down
     4D Button
     4D CW
     4D CCW
+
+Measured bit values (A49, see doc/Captured_Codes.md): 4D Up is bit 21, 4D Left
+bit 22, 4D Right bit 23, 4D Down bit 24 and 4D Button bit 33.
 
 > Note that *only* "Shift" can be combined with other buttons, so the following 
 > would be valid in your mapping configuration file:
 > `Undo=LeftCtrl,Z`
 > `Shift+Undo=LeftCtrl,LeftShift,R`
 
-Tapping on the rotary dials can also be mapped if you really want:
+Tapping on the rotary dials can also be mapped if you really want (measured:
+Rotary1..Rotary7 are bits 25..31, Rotary8 is bit 32, the first bit of the
+payload's fifth byte - its rotation is not in the HID report at all, it goes out
+as MIDI CC 14..21):
 
     Rotary1
     Rotary2
@@ -63,6 +69,10 @@ I discovered that the payload does include 6 additional buttons, but these canno
 be triggered by the Komplete Kontrol A25. I am guessing that Native Instruments use the 
 same protocol for different devices, and these might just work on keyboards that
 do have more buttons.
+
+They do not answer on an A49 either: with the fifth byte decoded, pressing every
+control produced nothing for Button34..Button39. That byte is read anyway,
+because Rotary8's touch sensor (bit 32) and 4D Button (bit 33) live in it.
 
     Button34
     Button35

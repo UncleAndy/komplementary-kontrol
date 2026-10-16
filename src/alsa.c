@@ -7,7 +7,7 @@ static int output_port = -1;
 /*
  * Creates the output port.
  */
-int alsa_create_output_port()
+int alsa_create_output_port(void)
 {
     return snd_seq_create_simple_port( 
         handle, 
@@ -39,7 +39,7 @@ int alsa_open_client(char * client_name)
 /* 
  * Cleanup ALSA client 
  */
-void alsa_close_client()
+void alsa_close_client(void)
 {
     if (handle != NULL)
     {

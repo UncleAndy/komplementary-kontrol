@@ -7,7 +7,7 @@ static mapping_key_t null_key;
 static mapping_key_t mapping[ REAL_BUTTON_TOTAL ];
 static mapping_key_t shifted_mapping[ REAL_BUTTON_TOTAL ];
 
-void mapping_init()
+void mapping_init(void)
 {
     memset( &null_key, 0, sizeof null_key );
     

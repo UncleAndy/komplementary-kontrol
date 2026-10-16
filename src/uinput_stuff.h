@@ -12,7 +12,7 @@
 #define _UINPUT_STUFF_H_
 
 int uinput_open(char *path);
-void uinput_close();
+void uinput_close( int fd );
 
 void key_press( int fd, int code );
 void key_release( int fd, int code );

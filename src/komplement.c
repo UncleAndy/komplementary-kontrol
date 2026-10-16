@@ -1,9 +1,16 @@
 #include "komplement.h"
+#include "hid_dump.h"
+#include <time.h>
 //#define KEYS_DEBUG
 //#define DUMP_KEYS_IN
 
 #define PACKET_SZ    8
 #define MAX_BUTTONS 40
+
+// The largest HID report we are willing to read/dump. The A25 uses 30 bytes;
+// a bigger buffer costs nothing and lets -d show the full packet should a
+// different A-series model report more.
+#define READ_BUFFER_SZ 64
 
 #define KEY_PRESS     1
 #define KEY_RELEASE   0
@@ -31,7 +38,9 @@ static void print_usage( char * argv0 )
         " -m /path/to/mapping  The path to mapping file (required to be useful).\n"
         " -a                   Do not create ALSA MIDI output port for MMC messages.\n"
         " -n                   Do not animate the buttons when starting/stopping.\n\n"
-        " -q                   Be less verbose.\n"
+        " -q                   Be less verbose.\n\n"
+        " -d                   Dump HID packets as they change (for mapping\n"
+        "                      the buttons and rotaries that are not handled yet).\n\n"
 
         "Advanced options:\n"
         " -p <productId>       USB product ID (in case you want to try other hardware).\n"
@@ -75,7 +84,7 @@ static void send_key_wrap( int fd_uinput, mapping_key_t send_key, int press )
  * This lights up only the buttons that have an actual action
  * mapped together with SHIFT 
  */
-static void lightup_shifted()
+static void lightup_shifted(void)
 {
     int light_it_up;
     for(int i=0; i<TOTAL_HID_BUTTONS; i++)
@@ -87,7 +96,7 @@ static void lightup_shifted()
         leds_update_led( i, light_it_up );        
     }
     
-    leds_sync(cfg.vid, cfg.pid);
+    leds_sync();
 }
 
 
@@ -96,7 +105,7 @@ static void lightup_shifted()
  * This lights up only those buttons that have a mapping without
  * the SHIFT being pressed
  */
-static void lightup_normal()
+static void lightup_normal(void)
 {
     int light_it_up;
     for(int i=0; i<TOTAL_HID_BUTTONS; i++)
@@ -110,7 +119,7 @@ static void lightup_normal()
         leds_update_led( i, light_it_up );
     }
     
-    leds_sync(cfg.vid, cfg.pid);
+    leds_sync();
 }
 
 
@@ -123,7 +132,7 @@ static void lightup_normal()
  * 
  * Returns -1 if the LEDs could not be synced, 0 otherwise.
  */
-static int lightup_initial()
+static int lightup_initial(void)
 {
     for(int i=0; i<TOTAL_HID_BUTTONS; i++)
     {
@@ -131,7 +140,7 @@ static int lightup_initial()
         int light_it_up = (i == 0 || i == 19 || i == 20 || mapping_is_mapped(i, -1)) ? 1 : 0;
         leds_update_led( i, light_it_up ? LED_ON : LED_OFF );
         
-        if (leds_sync(cfg.vid, cfg.pid) < 0)
+        if (leds_sync() < 0)
         {
             return -1;
         }
@@ -160,6 +169,11 @@ int main(int argc, char* argv[])
     // 
     int return_code = 0;
     
+    // The uinput file descriptor; -1 while it is not open, because the error
+    // paths below jump to the cleanup label which closes it (and the variable
+    // would otherwise be read uninitialised).
+    int fd_uinput = -1;
+    
     // Tool configuration, set the defaults.
     memset( &cfg, 0, sizeof cfg );    
         
@@ -176,7 +190,7 @@ int main(int argc, char* argv[])
     
     int opt;
     int total_options_parsed = 0;
-    while ((opt = getopt( argc, argv, "v:p:m:o:qnha" )) != -1)
+    while ((opt = getopt( argc, argv, "v:p:m:o:qnhda" )) != -1)
     {
         total_options_parsed++;
         switch(opt)
@@ -204,6 +218,10 @@ int main(int argc, char* argv[])
                 
             case 'q': 
                 cfg.quiet = true;
+                break;
+                
+            case 'd':
+                cfg.dump = true;
                 break;
                 
             case 'n': 
@@ -279,7 +297,7 @@ int main(int argc, char* argv[])
     // keep the rest dark.
     if (cfg.animate)
     {
-        leds_animate_on(cfg.vid, cfg.pid);
+        leds_animate_on();
     }
         
    
@@ -321,7 +339,7 @@ int main(int argc, char* argv[])
     memset( button_state, 0, MAX_BUTTONS );
     
     // Set up uinput device.
-    int fd_uinput = uinput_open( cfg.uinput_path );
+    fd_uinput = uinput_open( cfg.uinput_path );
     if (fd_uinput < 0)
     {
         // close(fd);
@@ -346,8 +364,8 @@ int main(int argc, char* argv[])
     // read packets until interrupted
     while (read_aborted == 0)
     {
-        size_t keypress_buffer_size = 30; 
-        unsigned char keypress_buffer[ 30 ];      
+        size_t keypress_buffer_size = READ_BUFFER_SZ; 
+        unsigned char keypress_buffer[ READ_BUFFER_SZ ];      
 //        printf( "trying to read...\n" );
         
         //int keypress_buffer_read = hidstuff_read_raw( &keypress_buffer, keypress_buffer_size, 1 );
@@ -394,10 +412,29 @@ int main(int argc, char* argv[])
         
         // Determine the pressed keys. Multiple keys can be pressed
         // at the same time.
+        //
+        // Bits 0..31 come from the four bytes after the report ID; buttons
+        // 32..39 live in the fifth byte (on an A49 bit 32 is the touch sensor
+        // of Rotary8 and bit 33 is 4D Button, and the rest are the extra
+        // buttons the A-series payload carries), so that byte has to be part
+        // of the mask or those buttons can never be seen.
         const long key_value = ((long)keypress_buffer[1])
                 | ((long)keypress_buffer[2]) << 8
                 | ((long)keypress_buffer[3]) << 16
-                | ((long)keypress_buffer[4]) << 24;
+                | ((long)keypress_buffer[4]) << 24
+                | ((long)keypress_buffer[5]) << 32;
+
+        // -d: print every packet that differs from the previous one. Handy to
+        // find out where controls that are not handled yet (rotary rotation
+        // and touch, 4D directions, ...) show up in the report.
+        if (cfg.dump)
+        {
+            struct timespec dump_now;
+            clock_gettime( CLOCK_MONOTONIC, &dump_now );
+            const long long stamp_ms = (long long)dump_now.tv_sec * 1000 + dump_now.tv_nsec / 1000000;
+
+            hid_dump_packet( keypress_buffer, keypress_buffer_read, stamp_ms );
+        }
             
 #ifdef KEYS_DEBUG
         printf( "key value: %032b %ld\n", key_value, key_value  );
@@ -489,7 +526,11 @@ int main(int argc, char* argv[])
         
         // So if any button is pressed, then the relevant bit would be set.
         // The shift is ignored, so we start at '1'.
-        for(int button_number = 1; button_number < TOTAL_HID_BUTTONS; button_number++)
+        //
+        // The upper bound is MAX_BUTTONS (40, every bit the payload carries)
+        // rather than TOTAL_HID_BUTTONS: the latter sizes the LED report, which
+        // is a fixed 22 bytes of the protocol and must not be widened.
+        for(int button_number = 1; button_number < MAX_BUTTONS; button_number++)
         {
             long test_value = 1 << button_number;   
             int  new_button_state = (key_value & test_value) ? 1 : 0; // pressed or released
@@ -521,9 +562,9 @@ clean_up_and_exit:
     if (fd_uinput>-1) uinput_close(fd_uinput);
     
     if (cfg.animate) {
-        leds_animate_off(cfg.vid, cfg.pid);
+        leds_animate_off();
     } else {
-        leds_off(cfg.vid, cfg.pid);
+        leds_off();
     }
     
     hidstuff_exit();

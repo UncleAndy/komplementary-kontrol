@@ -14,12 +14,12 @@
 #define LED_ON              0x7c
 #define LED_OFF             0x00
 
-void leds_init();
-void leds_clear();
+void leds_init( void );
+void leds_clear( void );
 void leds_update_led( int index, int state );
-int leds_sync();
-void leds_animate_on();
-void leds_animate_off();
-void leds_off();
+int leds_sync( void );
+void leds_animate_on( void );
+void leds_animate_off( void );
+void leds_off( void );
 
 #endif /* _BUTTON_LEDS_H_ */

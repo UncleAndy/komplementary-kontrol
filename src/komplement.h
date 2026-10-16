@@ -30,6 +30,10 @@ typedef struct t_komplement_config {
     // can be used as input by other software
     bool midi_controller;
     
+    // Dump the raw HID packets (only the ones that differ from the previous
+    // packet), to work out where unhandled controls show up.
+    bool dump;
+    
     // Path to mapping configuration.
     char * mapping_path;
     

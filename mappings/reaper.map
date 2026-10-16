@@ -103,8 +103,8 @@ Shift+4D CW=Right
 # 4D dial and the rotary touch sensors ----------------------------------------
 # The bit values behind these names were measured on an A49, see
 # doc/Captured_Codes.md. Up/Down walk the track list, Left/Right nudge the time
-# selection, 4D Button toggles the selected track's volume envelope, and
-# touching knob N jumps to marker N - all stock Reaper shortcuts.
+# selection, 4D Button toggles the selected track's volume envelope, and the
+# 4D dial jogs the edit/play cursor - all stock Reaper shortcuts.
 #
 # (Until the payload's fifth byte was decoded these could not fire at all: the
 # scan loop stopped at button 20.)
@@ -114,19 +114,39 @@ Shift+4D CW=Right
 4D Right=Dot
 4D Button=V
 
-# The touch sensors are momentary, so they read as a tap. SHIFT+touch is left
-# free for your own bindings.
-Rotary1=1
-Rotary2=2
-Rotary3=3
-Rotary4=4
-Rotary5=5
-Rotary6=6
-Rotary7=7
-Rotary8=8
+# Knobs ----------------------------------------------------------------------
+# The touch sensors are momentary, so a touch reads as a tap.
+#
+# Touching a knob selects the matching track: with no SHIFT, knob N sends
+# Ctrl+Alt+N, bound in Reaper to "Track: Select track 01" .. "08".
+#
+# With SHIFT held on the keyboard, knob N sends Ctrl+Shift+Alt+N, which is
+# meant for "Track: Select track 09" .. "16" - the second bank of eight tracks.
+#
+# Turning a knob is *not* routed through komplement: the knobs send MIDI CC
+# 14..21 (channel 1, one CC per knob, absolute values - see
+# doc/Captured_Codes.md). Reaper learns those straight to
+# "Track: Set volume for track 01..08 (MIDI CC/OSC only)", so a knob always
+# drives its own track no matter what is selected. (The alternative is to have
+# this tool read the CCs and send volume nudges instead.)
+#
+# All four combinations (Ctrl+Alt+N, Ctrl+Shift+Alt+N) are free in GNOME's
+# window manager and in Reaper's stock keymap, including the MIDI editor.
+Rotary1=LeftCtrl,LeftAlt,1
+Rotary2=LeftCtrl,LeftAlt,2
+Rotary3=LeftCtrl,LeftAlt,3
+Rotary4=LeftCtrl,LeftAlt,4
+Rotary5=LeftCtrl,LeftAlt,5
+Rotary6=LeftCtrl,LeftAlt,6
+Rotary7=LeftCtrl,LeftAlt,7
+Rotary8=LeftCtrl,LeftAlt,8
+Shift+Rotary1=LeftCtrl,LeftShift,LeftAlt,1
+Shift+Rotary2=LeftCtrl,LeftShift,LeftAlt,2
+Shift+Rotary3=LeftCtrl,LeftShift,LeftAlt,3
+Shift+Rotary4=LeftCtrl,LeftShift,LeftAlt,4
+Shift+Rotary5=LeftCtrl,LeftShift,LeftAlt,5
+Shift+Rotary6=LeftCtrl,LeftShift,LeftAlt,6
+Shift+Rotary7=LeftCtrl,LeftShift,LeftAlt,7
+Shift+Rotary8=LeftCtrl,LeftShift,LeftAlt,8
 
-# The knobs' rotation is not in the HID report at all - it goes out as absolute
-# MIDI CC 14..21 (channel 1, one controller per knob), so there is nothing to
-# map here: either MIDI-learn a parameter in Reaper from the keyboard's MIDI
-# input, or have the tool translate those CCs.
 # Button34..Button39 were silent on the A49 (nothing in the payload either).

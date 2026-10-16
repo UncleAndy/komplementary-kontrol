@@ -189,6 +189,11 @@ step per detent). Two ways to use them:
   knob's position, because the values are absolute;
 * or teach `komplement` to read those CCs and translate them - not implemented.
 
+The supplied `mappings/reaper.map` follows the first way: the knob *touch*
+sensors select tracks (knob 1..8 -> tracks 1..8, with SHIFT held -> tracks
+9..16), and the DAW is expected to learn CC 14..21 onto the volume of the
+matching tracks.
+
 The CC numbers come from the device's own configuration and `konfigure` can
 change them (see below).
 
